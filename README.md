@@ -1,40 +1,71 @@
-# MiniLMS Fullstack (Monorepo)
+# MiniLMS — Full Stack Application
 
-MiniLMS is a Learning Management System project organized as a monorepo. It currently includes a production-ready FastAPI backend and a frontend workspace prepared for UI development.
+MiniLMS is a Learning Management System built as a full stack monorepo. It provides role-based access for Admins, Teachers, and Students with JWT authentication, lesson/grade management, and transcript generation.
 
-## Repository Purpose
+---
 
-This repository is designed to manage core LMS workflows such as:
-- User registration and login (JWT-based authentication)
-- Student management
-- Lesson management
-- Grade management and transcript generation
-- Academic business rules (grade validation and absenteeism policies)
-
-## Monorepo Structure
+## Repository Structure
 
 ```text
 MiniLMS_Backend/
-├── backend/        # FastAPI + SQLAlchemy backend API
-└── frontend/       # Frontend workspace (currently empty / to be implemented)
+├── backend/        # FastAPI + SQLAlchemy REST API
+└── frontend/       # React + Vite user interface
 ```
 
-## Backend at a Glance
+---
 
-The backend is built with:
-- FastAPI (REST API + Swagger/OpenAPI)
-- SQLAlchemy (ORM)
-- Pydantic (schema validation)
-- JWT (authentication/authorization)
-- SQL database connection via `pyodbc` (Docker-based setup, managed with Azure Data Studio)
+## Features
 
-For full backend technical documentation, setup instructions, architecture, and business rules, see:
+- JWT-based authentication and authorization
+- Role-based access control (Admin / Teacher / Student)
+- Student management (create, delete, list)
+- Lesson management (create, edit, delete)
+- Grade entry and update
+- Transcript viewing with pass/fail status
+- Absenteeism tracking with automatic fail rule (30% threshold)
+- Course enrollment and unenrollment
 
-- [backend/README.md](backend/README.md)
+---
+
+## Tech Stack
+
+### Backend
+| Layer | Technology |
+|-------|-----------|
+| Framework | FastAPI |
+| ORM | SQLAlchemy |
+| Validation | Pydantic |
+| Auth | OAuth2 + JWT (`python-jose`) |
+| Password Hashing | Passlib + bcrypt |
+| Database Driver | pyodbc (Docker-hosted SQL Server) |
+
+### Frontend
+| Layer | Technology |
+|-------|-----------|
+| Framework | React (via Vite) |
+| Styling | Tailwind CSS |
+| HTTP Client | Axios |
+| Routing | React Router |
+
+---
 
 ## Quick Start
 
-### Backend
+### 1. Start the Database (Docker)
+
+```bash
+docker start mssql
+```
+
+If setting up for the first time:
+
+```bash
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourPassword" \
+  -p 1433:1433 --name mssql \
+  -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
+### 2. Start the Backend
 
 ```bash
 cd backend
@@ -43,11 +74,33 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Open API docs at:
-- `http://127.0.0.1:8000/docs`
+API docs available at: `http://127.0.0.1:8000/docs`
 
-## Notes
+### 3. Start the Frontend
 
-- The backend currently uses database connection settings from `DATABASE_URL` or a default local Docker-compatible connection string.
-- Azure Data Studio is used as the database client/management tool.
-- The frontend folder is intentionally present for fullstack expansion.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+App available at: `http://localhost:5173`
+
+---
+
+## Database Configuration
+
+The backend uses SQL Server via Docker. The default connection string is configured in `backend/app/database.py`.
+
+To override with an environment variable:
+
+```bash
+export DATABASE_URL="mssql+pyodbc://<user>:<password>@127.0.0.1:1433/<db_name>?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
+```
+
+---
+
+## Detailed Documentation
+
+- Backend setup, architecture, and API reference: [`backend/README.md`](backend/README.md)
+- Frontend setup and page structure: [`frontend/README.md`](frontend/README.md)
