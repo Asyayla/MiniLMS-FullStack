@@ -58,3 +58,15 @@ frontend/
 │   └── main.jsx        # Entry point
 ├── public/
 └── index.html
+
+---
+
+### Frontend README → EKLE
+
+```markdown
+## Running the Frontend (Standalone)
+
+```bash
+cd frontend
+npm install
+npm run dev
