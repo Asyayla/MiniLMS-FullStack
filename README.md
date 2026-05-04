@@ -74,7 +74,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-API docs available at: `http://127.0.0.1:8000/docs`
+API docs: `http://127.0.0.1:8000/docs`
 
 ### 3. Start the Frontend
 
@@ -84,15 +84,13 @@ npm install
 npm run dev
 ```
 
-App available at: `http://localhost:5173`
+App: `http://localhost:5173`
 
 ---
 
 ## Database Configuration
 
-The backend uses SQL Server via Docker. The default connection string is configured in `backend/app/database.py`.
-
-To override with an environment variable:
+Default connection string is in `backend/app/database.py`. Override with:
 
 ```bash
 export DATABASE_URL="mssql+pyodbc://<user>:<password>@127.0.0.1:1433/<db_name>?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
@@ -102,5 +100,5 @@ export DATABASE_URL="mssql+pyodbc://<user>:<password>@127.0.0.1:1433/<db_name>?d
 
 ## Detailed Documentation
 
-- Backend setup, architecture, and API reference: [`backend/README.md`](backend/README.md)
-- Frontend setup and page structure: [`frontend/README.md`](frontend/README.md)
+- Backend: [`backend/README.md`](backend/README.md)
+- Frontend: [`frontend/README.md`](frontend/README.md)
