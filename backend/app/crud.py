@@ -1,5 +1,5 @@
 #bu dosya db islemlerini(repository) yonetir ve logic.py deki kurallari uygular
-#dbye git su veriyi kaydet veya sunu getir diyen ham sorguların oldugu yer.
+#dbye git su veriyi kaydet veya sunu getir diyen ham sorgularin oldugu yer.
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
@@ -11,17 +11,17 @@ def create_student(db: Session, student: schemas.StudentCreate):
     #kural1: kullanici var mi?
     user = db.query(models.User).filter(models.User.id == student.user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Belirtilen user_id icin kullanici bulunamadi.")
+        raise HTTPException(status_code=404, detail="No user was found for the specified user_id.")
 
     #kural2: email benzersiz mi?
     existing_email = db.query(models.Student).filter(models.Student.email == student.email).first()
     if existing_email:
-        raise HTTPException(status_code=400, detail="Bu email adresi zaten kayitli.")
+        raise HTTPException(status_code=400, detail="This email address is already registered.")
 
     #kural3: ogrenci numarasi benzersiz mi?
     existing_number = db.query(models.Student).filter(models.Student.student_number == student.student_number).first()
     if existing_number:
-        raise HTTPException(status_code=400, detail="Bu ogrenci numarasi zaten kayitli.")
+        raise HTTPException(status_code=400, detail="This student number is already registered.")
 
     db_student = models.Student(
         name=student.name,
@@ -38,7 +38,7 @@ def create_student(db: Session, student: schemas.StudentCreate):
         db.rollback()
         raise HTTPException(
             status_code=400,
-            detail="Ogrenci kaydi yapilamadi. user_id/email/student_number degerlerini kontrol edin.",
+            detail="Failed to register student. Please check the user_id/email/student_number values.",
         )
     return db_student
 
@@ -57,18 +57,18 @@ def create_grade(db: Session, grade_in: schemas.GradeCreate):
     if logic.check_absenteeism_limit(grade_in.absenteeism_count):
         raise HTTPException(
             status_code=400,
-            detail="Devamsizlik sayisi %30 limiti asmis. Bu derste otomatik kalacaktir."
+            detail="Absence count has exceeded the 30% limit. This student will automatically fail this course."
         )
 
     #kural2: ogrenci sistemde var mi
     student = db.query(models.Student).filter(models.Student.id == grade_in.student_id).first()
     if not student:
-        raise HTTPException(status_code=404, detail="Ogrenci bulunamadi.")
+        raise HTTPException(status_code=404, detail="Student not found.")
 
     #kural3: ders sistemde var mi
     lesson = db.query(models.Lesson).filter(models.Lesson.id == grade_in.lesson_id).first()
     if not lesson:
-        raise HTTPException(status_code=404, detail="Ders bulunamadi.")
+        raise HTTPException(status_code=404, detail="Lesson not found.")
 
     #kural4: ayni tip not var mi
     existing_grade = db.query(models.Grade).filter(
@@ -78,7 +78,7 @@ def create_grade(db: Session, grade_in: schemas.GradeCreate):
     ).first()
 
     if existing_grade:
-        raise HTTPException(status_code=400, detail="Bu tur icin notlandirma zaten var!")
+        raise HTTPException(status_code=400, detail="This type of grade already exists!")
 
     # kural5: aynı derste diğer notlarda devamsizlik > 30 mu
     other_grades = db.query(models.Grade).filter(
@@ -89,7 +89,7 @@ def create_grade(db: Session, grade_in: schemas.GradeCreate):
         if logic.check_absenteeism_limit(existing.absenteeism_count):
             raise HTTPException(
                 status_code=400,
-                detail=f"Bu derste daha onceki notlarda devamsizlik %30 limiti asilmis ({existing.grade_type}: {existing.absenteeism_count}). Otomatik kalacaktir."
+                detail=f"Your absence count has exceeded the 30% limit in this course ({existing.grade_type}: {existing.absenteeism_count}). You will automatically fail this course."
             )
 
     #kayit islemi
@@ -108,7 +108,7 @@ def create_grade(db: Session, grade_in: schemas.GradeCreate):
         db.rollback()
         raise HTTPException(
             status_code=404,
-            detail="Ogrenci veya ders bulunamadi.",
+            detail="Student or lesson not found.",
         )
     return db_grade
 
@@ -128,7 +128,7 @@ def update_grade(db: Session, grade_id: int, grade_update: schemas.GradeUpdate):
         if logic.check_absenteeism_limit(grade_update.absenteeism_count):
             raise HTTPException(
                 status_code=400,
-                detail="Devamsizlik sayisi %30 limiti asmis. Bu derste otomatik kalacaktir."
+                detail="Your absence count has exceeded the 30% limit. You will automatically fail this course."
             )
         db_grade.absenteeism_count = grade_update.absenteeism_count
 
@@ -158,11 +158,13 @@ def get_student_transcript(db: Session, student_id: int):
 
         #dokumanda beklenen tum bilgileri listeye ekliyoruz
         transcript_data.append({
+            "lesson_id": lesson.id,
             "lesson_code": lesson.code,
             "lesson_name": lesson.name,
+            "grade_type": grade.grade_type,
             "grade_value": grade.grade_value,
             "absenteeism": grade.absenteeism_count,
-            "status": status
+            "status": status 
         })
 
     return transcript_data

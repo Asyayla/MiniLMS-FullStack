@@ -7,13 +7,13 @@ def get_lesson_by_id(db: Session, lesson_id: int):
 
 
 def calculate_lesson_success(db: Session, lesson_id: int):
-    # Grades tablosundan bu derse ait tüm notları çek
+    # Grades tablosundan bu derse ait tüm notları cek
     grades = db.query(models.Grade).filter(models.Grade.lesson_id == lesson_id).all()
 
     if not grades:
         return None
 
-    # Modelle uyumlu şekilde grade_value üzerinden hesapla
+    # Modelle uyumlu sekilde grade_value uzerinden hesapla
     total_score = sum([g.grade_value for g in grades])
     average = total_score / len(grades)
 

@@ -23,7 +23,7 @@ def create_grade(
     if current_user.role not in ["teacher","admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Bu islem icin yetkiniz yok. Sadece ogretmenler ya da admin not girebilir.",
+            detail="You do not have permission for this operation. Only teachers or administrators can submit grades.",
         )
     return crud.create_grade(db=db, grade_in=grade)
 
@@ -39,12 +39,12 @@ def update_grade(
     if current_user.role not in ["teacher","admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Bu islem icin yetkiniz yok.",
+            detail="You do not have permission for this operation.",
         )
 
     #guncelleme islemi
     db_grade = crud.update_grade(db=db, grade_id=id, grade_update=grade_update)
     if not db_grade:
-        raise HTTPException(status_code=404, detail="not bulunamadi")
+        raise HTTPException(status_code=404, detail="Grade not found.")
 
     return db_grade

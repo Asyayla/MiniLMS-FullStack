@@ -1,6 +1,7 @@
 #FastAPI uygulamasini burada ayaga kaldirir ve
 #hazirlanan routerları(yoneticileri) buraya kaydedersin.
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db, is_db_connected
 from app.routers import auth, grade, student, lesson #lesson i ekledim
 from app import models
@@ -13,6 +14,17 @@ openapi_tags = [
 ]
 
 app = FastAPI(title="Mini LMS Backend API", openapi_tags=openapi_tags)
+
+# CORS ayarları
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Gelistirme asamasinda tum originlere izin veriyoruz
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"]
+)
+
 app.state.db_ready = False
 
 
@@ -26,11 +38,11 @@ app.include_router(auth.router)
 app.include_router(student.router)
 app.include_router(grade.router)
 
-app.include_router(lesson.router) #bu satiri ekledim
+app.include_router(lesson.router) 
 
 @app.get("/")
 def root():
-    return {"message": "Mini LMS Sistemine Hos Geldiniz"}
+    return {"message": "Welcome to the Mini LMS System"}
 
 
 @app.get("/health/db")

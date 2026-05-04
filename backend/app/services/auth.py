@@ -14,9 +14,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-#swagger uideki authorize butonunun login endpointini bulabilmesi icin prefixle uyumlu olmalı.
+#swagger uideki authorize butonunun login endpointini bulabilmesi icin prefixle uyumlu olmali.
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="/auth/login")
-#API in tokenları hangi adresten okuyacagını soyluyoruz
+#API in tokenlari hangi adresten okuyacagini soyluyoruz
 
 def get_current_user(token: str = Depends(oauth2_schema)):
     credentials_exception = HTTPException(
@@ -27,11 +27,13 @@ def get_current_user(token: str = Depends(oauth2_schema)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        role: str = payload.get("role")  #rol bilgisini payloaddan alıyoruz
-        if username is None or role is None:  #erisim engelleniyor
+        role: str = payload.get("role")  #rol bilgisini payloaddan aliyoruz
+        user_id: int = payload.get("user_id")  #kullanici ID'sini payloaddan aliyoruz
+        
+        if username is None or role is None or user_id is None:  #erisim engelleniyor
             raise credentials_exception
 
-        return schemas.TokenData(username=username, role=role)
+        return schemas.TokenData(username=username, role=role, user_id=user_id)
     except JWTError:  #sadece token ile ilgili hatalari yakaladik diger olusabilen hatalarin token hatasi sayilmasi engellendi.
         raise credentials_exception
 

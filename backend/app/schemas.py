@@ -21,9 +21,13 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user_id: int
+    role: str
+    username: str
 
 #token icinden cikacak veriler
 class TokenData(BaseModel):
+    user_id: Optional[int] = None
     username: Optional[str] = None
     role: Optional[str] = None
 
@@ -97,5 +101,6 @@ class StudentTranscript(BaseModel):
     grades: List[TranscriptEntry]
 
 
-
-
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str
