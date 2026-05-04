@@ -46,3 +46,17 @@ backend/
 ├── seed_db.py          # Sample data script
 ├── requirements.txt
 └── .env
+
+---
+
+## Running the Backend (Standalone)
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+docker start mssql
+
+uvicorn app.main:app --reload
