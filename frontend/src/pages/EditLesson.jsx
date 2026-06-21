@@ -16,8 +16,11 @@ function EditLesson() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Parallel Data Fetching: Execute asynchronous API requests simultaneously to load initial state metadata
         const [lesson, users] = await Promise.all([getLessonById(id), getAllUsers()]);
         setForm({ name: lesson.name, code: lesson.code, teacher_id: lesson.teacher_id });
+        
+        // RBAC Filter: Extract users holding eligible lecturing roles from the complete directory framework
         setTeachers(users.filter(u => u.role === 'teacher' || u.role === 'admin'));
       } catch (err) {
         setError('Failed to load lesson data.');
@@ -35,6 +38,7 @@ function EditLesson() {
     setError('');
     setSubmitting(true);
     try {
+      // Execute PUT requests payload mapping properties cleanly down into tracking layers
       await updateLesson(id, { ...form, teacher_id: Number(form.teacher_id) });
       setSuccessMsg('Lesson updated successfully.');
       setTimeout(() => setSuccessMsg(''), 3000);
@@ -48,6 +52,7 @@ function EditLesson() {
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this lesson? All grades will also be deleted.')) return;
     try {
+      // Cascading Deletion Trigger: Prunes structural lesson references alongside child evaluation properties mapping dependencies
       await deleteLesson(id);
       navigate('/');
     } catch (err) {
@@ -64,6 +69,7 @@ function EditLesson() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen font-sans">
       <div className="max-w-2xl mx-auto">
+        {/* Navigation Action and Section Header Segment */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
@@ -83,6 +89,7 @@ function EditLesson() {
           </div>
         )}
 
+        {/* Informational Editing Forms Panel Interface */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
           <form onSubmit={handleUpdate} className="space-y-6">
             <div>
@@ -118,6 +125,7 @@ function EditLesson() {
               <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-medium">{error}</div>
             )}
 
+            {/* Mutually Exclusive Destructive vs Persisting Action Triggers */}
             <div className="flex gap-3 pt-2">
               <button
                 type="button" onClick={handleDelete}

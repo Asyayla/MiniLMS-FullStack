@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import Chatbot from "./components/Chatbot";
 import CreateLesson from "./pages/CreateLesson";
 import StudentManagement from "./pages/StudentManagement";
 import Transcript from "./pages/Transcript";
@@ -10,43 +11,48 @@ import ManageUsers from "./pages/ManageUsers";
 import EditLesson from "./pages/EditLesson";
 import ProfileSettings from "./pages/ProfileSettings";
 
-
-// Gecici placeholder bilesenleri
+/**
+ * Temporary fallback scaffolding component designed to represent feature sets
+ * that are currently undergoing active software development.
+ */
 const PageUnderConstruction = ({ title }) => (
   <div className="p-8 bg-gray-50 min-h-screen flex items-center justify-center">
     <div className="text-center">
       <h1 className="text-4xl font-bold text-gray-800 mb-4">🚧 {title}</h1>
-      <p className="text-gray-600">Bu sayfa yakında hazır olacak.</p>
+      <p className="text-gray-600">This page will be available soon.</p>
     </div>
   </div>
 );
 
 function App() {
-  const { token, user } = useAuth();   //hafizadaki token bilgisini aliyoruz
-  
+  // Extract state variables directly from the core global authentication context frame
+  const { token, user } = useAuth();   
 
   return (
     <Router>
       <div className="App">
-        <Navbar /> {/* Navbar'i her zaman goster, icerisinde token kontrolu yaparak linkleri gosteririz */}
+        {/* Persistent Layout Components: Rendered globally across all routes. Internal guards handle visual states. */}
+        <Navbar /> 
+        <Chatbot /> 
+
         <Routes>
           {/*
-           GİRİS KONTROLU: 
-            Eger kullanici giris yapmissa (token varsa) ana sayfada Dashboard'u goster.
-            Giris yapmamissa direkt Login sayfasina yonlendir
+           AUTHENTICATION GUARD: 
+           If the session token exists, mount the primary Dashboard dashboard frame.
+           Otherwise, block lifecycle execution and intercept redirect loops back to /login.
            */}
           <Route
             path="/" 
             element={token ? <Dashboard /> : <Navigate to="/login" />} 
            />
 
-          {/* Login sayfasi: Eger zaten giris yapilmissa tekrar login'e girmesin, ana sayfaya gitsin */}
+          {/* Login Route: Prevents already authenticated active users from hitting the credentials page redundantly */}
           <Route
             path="/login"
             element={!token ? <Login /> : <Navigate to="/" />} 
             />
 
-          {/* Create Lesson Sayfası - Sadece Teacher ve Admin gorebilir */}
+          {/* Academic Provisioning Route - Strictly restricted to Teacher or Admin roles via internal assertion */}
           <Route 
             path="/create-lesson" 
             element={
@@ -56,31 +62,31 @@ function App() {
             } 
           />
 
-          {/* Profile Sayfasi */}
+          {/* Secured Profile Configurations Route */}
           <Route
             path="/profile"
             element={token ? <ProfileSettings /> : <Navigate to="/login" />}
           />
 
-          {/* Transcript Sayfasi - Sadece Student */}
+          {/* Student Document Transcript Viewport Route - Strictly restricted to the Student profile role */}
           <Route
             path="/transcript"
             element={token && user?.role === 'student' ? <Transcript /> : <Navigate to="/" />}
           />
 
-          {/* Admin - Manage Users */}
+          {/* Administrative Core - Identity Profile Directory Management Route */}
           <Route
             path="/admin/manage-users"
             element={token && user?.role === 'admin' ? <ManageUsers /> : <Navigate to="/" />}
           />
 
-          {/* Admin - Edit Lesson */}
+          {/* Administrative Core - Curriculum Modification Entry Route */}
           <Route
             path="/admin/edit-lesson/:id"
             element={token && user?.role === 'admin' ? <EditLesson /> : <Navigate to="/" />}
           />
 
-          {/* Teacher - Manage Students */}
+          {/* Instructor Core - Student Rosters Grade Modification Viewport Route */}
           <Route
             path="/lesson/:id/students"
             element={
@@ -89,7 +95,7 @@ function App() {
               : <Navigate to="/" />}
           />
 
-          {/* Hatali bir yol yazilirsa(404) Login'e geri gonder */}
+          {/* Wildcard Fallback Route: Intercepts unmapped 404 paths and resets navigation loops back toward /login safely */}
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </div>

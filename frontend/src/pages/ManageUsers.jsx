@@ -71,6 +71,7 @@ function ManageUsers() {
   const handleDeleteUser = async (userId, username) => {
     if (!window.confirm(`Are you sure you want to delete "${username}"? This action cannot be undone.`)) return;
     try {
+      // Cascading Account Removal: Safely flushes administrative credentials alongside matching profile tables
       await deleteUser(userId);
       setSuccessMsg(`User "${username}" deleted successfully.`);
       fetchUsers();
@@ -88,6 +89,7 @@ function ManageUsers() {
     setEditModalOpen(true);
   };
 
+  // Utility Mapping: Assigns explicit Tailwind color boundary themes according to the RBAC authorization tier
   const getRoleBadge = (role) => {
     if (role === 'admin') return 'bg-red-50 text-red-600 border border-red-200';
     if (role === 'teacher') return 'bg-emerald-50 text-emerald-600 border border-emerald-200';
@@ -97,6 +99,7 @@ function ManageUsers() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen font-sans">
       <div className="max-w-5xl mx-auto">
+        {/* Main Operational Panel Header Section */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
@@ -121,7 +124,7 @@ function ManageUsers() {
           </div>
         )}
 
-        {/* Stats - 4 kart */}
+        {/* Informational Analytical Quantities Card Grid Matrix */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 text-center">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total</p>
@@ -141,6 +144,7 @@ function ManageUsers() {
           </div>
         </div>
 
+        {/* Directory Listings Data Grid Layout */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
             <div className="p-8 space-y-4">
@@ -148,7 +152,6 @@ function ManageUsers() {
             </div>
           ) : users.length === 0 ? (
             <div className="p-12 text-center">
-              <p className="text-5xl mb-4">👥</p>
               <p className="text-gray-500 font-medium">No users found in the system.</p>
             </div>
           ) : (
@@ -197,7 +200,7 @@ function ManageUsers() {
         </div>
       </div>
 
-      {/* Create User Modal */}
+      {/* Account Provisioning Interactive Form Overlay Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl border border-gray-100">
@@ -239,7 +242,7 @@ function ManageUsers() {
         </div>
       )}
 
-      {/* Edit User Modal */}
+      {/* Role Modification Configuration Form Overlay Modal */}
       {editModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl border border-gray-100">

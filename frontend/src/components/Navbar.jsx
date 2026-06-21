@@ -6,6 +6,7 @@ function Navbar() {
   const { user, logout, token } = useAuth();
   const navigate = useNavigate();
 
+  // Guard clause: Hide the navigation header entirely if the user session token is missing
   if (!token) return null;
 
   const handleLogout = () => {
@@ -21,6 +22,8 @@ function Navbar() {
             <Link to="/" className="text-xl font-black tracking-wider text-white hover:text-indigo-200 transition-colors">
               MINI LMS
             </Link>
+            
+            {/* Conditional Routing: Render distinct operational panel links depending on the authenticated account's RBAC role tier */}
             <div className="hidden md:flex items-center gap-1">
               <Link to="/" className="hover:bg-indigo-800 px-4 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:text-white transition-all">
                 Dashboard
@@ -38,6 +41,7 @@ function Navbar() {
             </div>
           </div>
 
+          {/* User Profile Summary and Authentication Lifecycle Management Trigger Buttons */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-indigo-900 px-3 py-1.5 rounded-xl">
               <span className="text-sm text-indigo-200 font-medium">{user?.username}</span>

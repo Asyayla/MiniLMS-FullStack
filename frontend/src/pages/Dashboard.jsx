@@ -21,6 +21,8 @@ function Dashboard() {
       try {
         const data = await getLessons();
         setLessons(data);
+        
+        // Context Hydration: If logged-in user is a student, fetch their specific academic transcript map
         if (userRole === 'student' && user?.user_id) {
           try {
             const transcriptData = await getMyTranscript(user.user_id);
@@ -28,7 +30,7 @@ function Dashboard() {
             setEnrolledLessonIds(ids);
             setTranscript(transcriptData);
           } catch {
-            // transcript bossa sorun degil
+            // Safe fallback catch block: Proceed gracefully if the transcript registry is currently empty
           }
         }
       } catch (err) {
@@ -65,6 +67,8 @@ function Dashboard() {
       await unenrollFromLesson(lessonId);
       setEnrolledLessonIds(prev => prev.filter(id => id !== lessonId));
       setTranscript(prev => prev.filter(t => t.lesson_id !== lessonId));
+      
+      // Auto-Close Guard: Dismiss active grade modal context if the specific open course gets dropped
       if (gradeModal?.lessonCode === lessons.find(l => l.id === lessonId)?.code) {
         setGradeModal(null);
       }
@@ -75,10 +79,13 @@ function Dashboard() {
     }
   };
 
-
   const enrolledLessons = lessons.filter(l => enrolledLessonIds.includes(l.id));
   const availableLessons = lessons.filter(l => !enrolledLessonIds.includes(l.id));
 
+  /**
+   * Reusable presentation sub-component for course listing cards.
+   * Dynamically tracks actions based on RBAC permissions.
+   */
   const LessonCard = ({ lesson, enrolled }) => (
     <div className={`group p-5 bg-white rounded-3xl border transition-all duration-300 ${enrolled ? 'border-emerald-200 hover:shadow-lg' : 'border-gray-100 hover:border-indigo-200 hover:shadow-xl'}`}>
       <div className="flex flex-col h-full">
@@ -98,6 +105,7 @@ function Dashboard() {
           </h3>
         </div>
         <div className="mt-auto pt-4 border-t border-gray-50">
+          {/* Conditional Layouts Injection derived from authenticated user role variables */}
           {userRole === 'student' && (
             enrolled ? (
               <div className="space-y-2">
@@ -158,6 +166,7 @@ function Dashboard() {
               </div>
             ) : userRole === 'student' ? (
               <>
+                {/* Enrolled Courses Grid Display Layer */}
                 {enrolledLessons.length > 0 && (
                   <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -170,6 +179,7 @@ function Dashboard() {
                     </div>
                   </div>
                 )}
+                {/* Available Courses Grid Display Layer */}
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                   <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                     <span className="w-2 h-7 bg-indigo-600 rounded-full"></span>
@@ -186,6 +196,7 @@ function Dashboard() {
                 </div>
               </>
             ) : (
+              // Faculty and Administrators Directory Grid Display Framework
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                   <span className="w-2 h-8 bg-indigo-600 rounded-full"></span>
@@ -198,6 +209,7 @@ function Dashboard() {
             )}
           </div>
 
+          {/* Sidebar Menu Tracking Context Layer Wrapper */}
           <aside className="space-y-6">
             <div className="bg-gradient-to-br from-slate-900 to-indigo-900 p-8 rounded-3xl text-white shadow-2xl">
               <h3 className="text-xl font-bold mb-1">Welcome Back!</h3>
@@ -221,6 +233,7 @@ function Dashboard() {
               </div>
             </div>
 
+            {/* Application High Level Quantities Report Widget */}
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">LMS Overview</h4>
               <div className="flex items-center justify-between">
@@ -238,6 +251,7 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Course Evaluation Quick View Dialog Modal overlay context */}
       {gradeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-white rounded-3xl p-8 shadow-2xl border border-gray-100">

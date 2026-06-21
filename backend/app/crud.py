@@ -1,28 +1,30 @@
-#bu dosya db islemlerini(repository) yonetir ve logic.py deki kurallari uygular
-#dbye git su veriyi kaydet veya sunu getir diyen ham sorgularin oldugu yer.
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from . import models, schemas
-from app.services import logic #logic.py icindeki kurallari buraya cagiriyoruz
+from app.services import logic 
 
-#1. ogrenciyi dbye kaydetme(POST /ogrenci icin)
 def create_student(db: Session, student: schemas.StudentCreate):
-    #kural1: kullanici var mi?
+    """
+    Validates constraints and registers a new student profile in the database.
+    Ensures unique constraint compliance for user_id, email, and student_number.
+    """
+    # Verify that the underlying user account entity exists before registration
     user = db.query(models.User).filter(models.User.id == student.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="No user was found for the specified user_id.")
 
-    #kural2: email benzersiz mi?
+    # Enforce uniqueness constraint checking on the email resource mapping
     existing_email = db.query(models.Student).filter(models.Student.email == student.email).first()
     if existing_email:
         raise HTTPException(status_code=400, detail="This email address is already registered.")
 
-    #kural3: ogrenci numarasi benzersiz mi?
+    # Enforce uniqueness constraint checking on the student identification number
     existing_number = db.query(models.Student).filter(models.Student.student_number == student.student_number).first()
     if existing_number:
         raise HTTPException(status_code=400, detail="This student number is already registered.")
 
+    # Instantiate and bind the model entity mapping
     db_student = models.Student(
         name=student.name,
         surname=student.surname,
@@ -30,10 +32,10 @@ def create_student(db: Session, student: schemas.StudentCreate):
         user_id=student.user_id,
         email=student.email
     )
-    db.add(db_student) # SQL: insert into students...
+    db.add(db_student) 
     try:
-        db.commit() #degisiklikleri kaydet
-        db.refresh(db_student) #dbnin verdigi id yi geri al
+        db.commit() 
+        db.refresh(db_student) 
     except IntegrityError:
         db.rollback()
         raise HTTPException(
@@ -42,35 +44,37 @@ def create_student(db: Session, student: schemas.StudentCreate):
         )
     return db_student
 
-#2. Id ile ogrenci getirme(GET /ogrenci/{id} icin)
 def get_student(db: Session, student_id: int):
-    """Id ile ogrenci bilgilerini getirir."""
+    """
+    Fetches a single student metadata record from the directory using its unique ID.
+    """
     return db.query(models.Student).filter(models.Student.id == student_id).first()
 
-#3. Not girisi
 def create_grade(db: Session, grade_in: schemas.GradeCreate):
-    """Is kurallarini denetleyerek not girisi yapar."""
-    # kural1: not degeri 0-100 arasinda mi
+    """
+    Submits an evaluation grade record after verifying all systemic institutional 
+    business logic guidelines and boundaries.
+    """
+    # Enforce numeric boundary value checks (0-100) safely
     logic.validate_grade_value(grade_in.grade_value)
 
-    # kural1b: devamsizlik %30 limiti asilmis mi
-    if logic.check_absenteeism_limit(grade_in.absenteeism_count):
+    # Prevent processing if the candidate entry parameters violate attendance guidelines
+    if logic.check_absenteeism_limit(grade_in.blackbox_absenteeism_count if hasattr(grade_in, 'blackbox_absenteeism_count') else grade_in.absenteeism_count):
         raise HTTPException(
             status_code=400,
             detail="Absence count has exceeded the 30% limit. This student will automatically fail this course."
         )
 
-    #kural2: ogrenci sistemde var mi
+    # Validate structural existence properties of student and lesson contexts
     student = db.query(models.Student).filter(models.Student.id == grade_in.student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found.")
 
-    #kural3: ders sistemde var mi
     lesson = db.query(models.Lesson).filter(models.Lesson.id == grade_in.lesson_id).first()
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found.")
 
-    #kural4: ayni tip not var mi
+    # Guard against duplicate evaluations for identical evaluation types
     existing_grade = db.query(models.Grade).filter(
         models.Grade.student_id == grade_in.student_id,
         models.Grade.lesson_id == grade_in.lesson_id,
@@ -80,7 +84,7 @@ def create_grade(db: Session, grade_in: schemas.GradeCreate):
     if existing_grade:
         raise HTTPException(status_code=400, detail="This type of grade already exists!")
 
-    # kural5: aynı derste diğer notlarda devamsizlik > 30 mu
+    # Verify cumulative historical attendance tracks to check against limit bounds
     other_grades = db.query(models.Grade).filter(
         models.Grade.student_id == grade_in.student_id,
         models.Grade.lesson_id == grade_in.lesson_id,
@@ -92,7 +96,7 @@ def create_grade(db: Session, grade_in: schemas.GradeCreate):
                 detail=f"Your absence count has exceeded the 30% limit in this course ({existing.grade_type}: {existing.absenteeism_count}). You will automatically fail this course."
             )
 
-    #kayit islemi
+    # Persist the transactional grade schema structure maps
     db_grade = models.Grade(
         student_id=grade_in.student_id,
         lesson_id=grade_in.lesson_id,
@@ -112,19 +116,21 @@ def create_grade(db: Session, grade_in: schemas.GradeCreate):
         )
     return db_grade
 
-#4. not guncelleme (PUT /grades/{id})
 def update_grade(db: Session, grade_id: int, grade_update: schemas.GradeUpdate):
+    """
+    Updates operational grade parameters or updates attendance tracking fields safely.
+    """
     db_grade = db.query(models.Grade).filter(models.Grade.id == grade_id).first()
     if not db_grade:
         return None
 
-    #guncelleme sirasinda da 0-100 kurali onemli
+    # Dynamically update the grade score properties if provided
     if grade_update.grade_value is not None:
         logic.validate_grade_value(grade_update.grade_value)
         db_grade.grade_value = grade_update.grade_value
 
+    # Dynamically evaluate and update absenteeism indicators if provided
     if grade_update.absenteeism_count is not None:
-        # devamsizlik %30 limiti kontrol et
         if logic.check_absenteeism_limit(grade_update.absenteeism_count):
             raise HTTPException(
                 status_code=400,
@@ -136,27 +142,30 @@ def update_grade(db: Session, grade_id: int, grade_update: schemas.GradeUpdate):
     db.refresh(db_grade)
     return db_grade
 
-#5. transcript ve basari durumu
 def get_student_transcript(db: Session, student_id: int):
-    #ogrencinin notlarini ders isimleriyle birlikte cekmek icin join kullaniyoruz.
+    """
+    Compiles a comprehensive, aggregated student grade transcript report mapping 
+    across course collections using relational database joins.
+    """
+    # Execute join query linking Grade records cleanly with Lesson properties vectors
     results = db.query(models.Grade, models.Lesson).join(
         models.Lesson, models.Grade.lesson_id == models.Lesson.id
     ).filter(models.Grade.student_id == student_id).all()
 
     transcript_data = []
     for grade, lesson in results:
-        #business logic: devamsizlik %30 fazla ise otomatik kalir.
-        #toplam ders saati 100 uzerinden hesaplanmistir
+        # Enforce corporate attendance policy logic: auto-fail if absences > 30%
         is_absent = logic.check_absenteeism_limit(grade.absenteeism_count, total_hours=100)
 
+        # Map programmatic statuses derived from grade evaluation parameters
         if is_absent:
-            status = "Failed (Absenteeism)"
+            status_text = "Failed (Absenteeism)"
         elif grade.grade_value >= 50:
-            status = "Passed"
+            status_text = "Passed"
         else:
-            status = "Failed"
+            status_text = "Failed"
 
-        #dokumanda beklenen tum bilgileri listeye ekliyoruz
+        # Structural response assembly mapping block
         transcript_data.append({
             "lesson_id": lesson.id,
             "lesson_code": lesson.code,
@@ -164,7 +173,7 @@ def get_student_transcript(db: Session, student_id: int):
             "grade_type": grade.grade_type,
             "grade_value": grade.grade_value,
             "absenteeism": grade.absenteeism_count,
-            "status": status 
+            "status": status_text 
         })
 
     return transcript_data

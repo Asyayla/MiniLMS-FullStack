@@ -1,22 +1,25 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { decodeToken } from '../utils/jwtDecode';
 
-//1. bir iletisim kanali olusturuyoruz. bu kanal sayesinde uygulamanin herhangi bir yerinden kullanici bilgilerine erisebilecegiz.
+// Create a global communication channel to share authentication state across the component tree
 const AuthContext = createContext();
 
-//bu provider, uygulamanin herhangi bir yerinde kullanici bilgilerine erisebilmemizi saglar. 
+/**
+ * Authentication State Provider component.
+ * Synchronizes local component state with localStorage layers to preserve user sessions.
+ */
 export const AuthProvider = ({ children }) => {
      const [token, setToken] = useState(localStorage.getItem('token'));
      const [user, setUser] = useState(() => {
           const savedUser = localStorage.getItem('user');
           const savedToken = localStorage.getItem('token');
           
-          // Eğer localStorage'da user varsa onu kullan
+          // Use the persisted user metadata profile if it is explicitly cached in localStorage
           if (savedUser) {
                return JSON.parse(savedUser);
           }
           
-          // Eğer token varsa ama user yoksa, token'dan user'i decode et
+          // Session Recovery Fallback: Decode claims directly from the cached JWT if user object is missing
           if (savedToken) {
                const decodedToken = decodeToken(savedToken);
                if (decodedToken) {
@@ -31,9 +34,8 @@ export const AuthProvider = ({ children }) => {
           return null;
      });
 
-     //giris yapma fonksiyonu
      const login = (userData, userToken) => {
-          // Eğer role yoksa, token'dan decode et
+          // Dynamic Hydration Guard: Extract user attributes from claims if missing in payload
           let userToSave = { ...userData };
           if (!userToSave.role && userToken) {
                const decodedToken = decodeToken(userToken);
@@ -41,25 +43,30 @@ export const AuthProvider = ({ children }) => {
                userToSave.user_id = userToSave.user_id || decodedToken?.user_id;
           }
           
+          // Update volatile application state boundaries
           setToken(userToken);
           setUser(userToSave);
+          
+          // Persist credentials securely down into browser local storage layers
           localStorage.setItem('token', userToken);
           localStorage.setItem('user', JSON.stringify(userToSave));
-          localStorage.setItem('role', userToSave.role); // role bilgisini de ayri kaydet
-          localStorage.setItem('user_id', userToSave.user_id); // user_id bilgisini de ayri kaydet
+          localStorage.setItem('role', userToSave.role); 
+          localStorage.setItem('user_id', userToSave.user_id); 
           
-            console.log("User başarıyla giriş yaptı:", userToSave);
+          console.log("Session authenticated successfully:", userToSave);
      };
 
-     // Debug: log token/user changes
+     // Debug operational lifecycle tracker: log token/user mutations
      useEffect(() => {
           console.log('AuthContext changed - token:', token, 'user:', user);
      }, [token, user]);
 
-     //cikis yapma fonksiyonu
      const logout = () => {
+          // Flush intermediate state records entirely
           setToken(null);
           setUser(null);
+          
+          // Purge keys systematically to close active security contexts
           localStorage.removeItem('token'); 
           localStorage.removeItem('user');
           localStorage.removeItem('role');
@@ -73,5 +80,5 @@ export const AuthProvider = ({ children }) => {
      );
 }
 
-//diger sayfalarda bu bilgilere kolayca ulasmak icin bir kisayol
+// Custom abstraction hook shortcut for consuming authentication contexts safely inside pages
 export const useAuth = () => useContext(AuthContext);

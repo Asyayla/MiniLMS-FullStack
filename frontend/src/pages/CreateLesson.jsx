@@ -15,17 +15,22 @@ function CreateLesson() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
+      // Dynamic ID Resolution: Extract the current authenticated user's ID key representation
       const teacherId = user?.user_id || user?.id;
       if (!teacherId) {
         setError('Teacher ID not found. Please log in again.');
         setLoading(false);
         return;
       }
+      
+      // Execute asymmetric API communication toward the endpoints package with structured payload parameters
       await createLesson({ name, code, teacher_id: teacherId });
       alert('Lesson created successfully!');
       navigate('/');
     } catch (err) {
+      // Extract dynamic structural detail exceptions passed down from the backend server context
       setError(err.response?.data?.detail || 'Failed to create lesson.');
     } finally {
       setLoading(false);
@@ -35,6 +40,7 @@ function CreateLesson() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-md mx-auto">
+        {/* Component Header Actions Segment */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
             <span className="w-2 h-7 bg-indigo-600 rounded-full"></span>
@@ -48,6 +54,7 @@ function CreateLesson() {
           </button>
         </div>
 
+        {/* Input Form Fields Wrapper Container */}
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           {error && (
             <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">{error}</div>

@@ -15,20 +15,27 @@ function Login() {
     e.preventDefault();
     setError('');
     try {
+      // Execute asymmetric credentials authentication verification request
       const data = await loginUser(username, password);
       if (!data.access_token) throw new Error("Token not found");
+      
+      // Initialize internal session metadata cache fields
       let userData = {
         username: data.username || username,
         role: data.role,
         user_id: data.user_id
       };
+      
       try {
+        // Fallback claims decoding: Unpack JWT signature data arrays directly if identity references are blank
         const decoded = decodeToken(data.access_token);
         userData.user_id = userData.user_id || decoded?.user_id;
         userData.role = userData.role || decoded?.role;
       } catch (decodeErr) {
-        console.warn("Token decode failed, using backend data.");
+        console.warn("Token decode failed, using backend data fallback context wrapper.");
       }
+      
+      // Mutate global application authentication boundaries and sync up local storage locks
       login(userData, data.access_token);
       navigate('/');
     } catch (err) {
@@ -40,13 +47,13 @@ function Login() {
   return (
     <div className="min-h-screen bg-indigo-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo / Header */}
+        {/* Brand Identity Branding Panel Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black text-white tracking-wider mb-2">MINI LMS</h1>
           <p className="text-indigo-300 text-sm">Learning Management System</p>
         </div>
 
-        {/* Card */}
+        {/* Form Interactive Input Content Container */}
         <div className="bg-white rounded-3xl shadow-2xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
           <p className="text-gray-500 text-sm mb-8">Sign in to your account to continue</p>

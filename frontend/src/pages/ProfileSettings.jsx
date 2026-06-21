@@ -18,10 +18,13 @@ function ProfileSettings() {
     e.preventDefault();
     setError('');
 
+    // Input Validation Guard: Verify that both password entries match identically
     if (form.new_password !== form.confirm_password) {
       setError('New passwords do not match.');
       return;
     }
+    
+    // Security Constraint Guard: Enforce strict minimum length thresholds
     if (form.new_password.length < 6) {
       setError('New password must be at least 6 characters.');
       return;
@@ -29,9 +32,12 @@ function ProfileSettings() {
 
     setSubmitting(true);
     try {
+      // Execute PUT password modification request toward the backend services layer
       await changePassword(form.current_password, form.new_password);
       setSuccessMsg('Password changed successfully. Please log in again.');
       setForm({ current_password: '', new_password: '', confirm_password: '' });
+      
+      // Post-Rotation Lifecycle: Trigger automated logouts sequence to clear stale localStorage contexts
       setTimeout(() => {
         logout();
         navigate('/login');
@@ -43,6 +49,7 @@ function ProfileSettings() {
     }
   };
 
+  // Utility Mapping: Generates standardized RBAC color palettes dynamically
   const getRoleBadge = (role) => {
     if (role === 'admin') return 'bg-red-50 text-red-600 border border-red-200';
     if (role === 'teacher') return 'bg-emerald-50 text-emerald-600 border border-emerald-200';
@@ -52,6 +59,7 @@ function ProfileSettings() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen font-sans">
       <div className="max-w-2xl mx-auto">
+        {/* Navigation Actions and General Layout Headers */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
@@ -65,7 +73,7 @@ function ProfileSettings() {
           </button>
         </div>
 
-        {/* User Info Card */}
+        {/* User Identity Informational Grid Card */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Account Information</h2>
           <div className="flex items-center gap-4">
@@ -81,7 +89,7 @@ function ProfileSettings() {
           </div>
         </div>
 
-        {/* Change Password Card */}
+        {/* Password Credentials Rotation Interface Card */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Change Password</h2>
 
