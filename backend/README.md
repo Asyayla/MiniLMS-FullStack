@@ -163,7 +163,7 @@ Implements a context-injection pattern. On every chat request:
 3. The transcript is serialized into a ground-truth context block and injected directly into the prompt.
 4. The model is instructed to answer exclusively from the supplied context and to decline when the answer is not present in the data, preventing hallucination.
 
-This guarantees per-student data isolation: a student can never receive another student's academic data through the chatbot, by construction of the query rather than by trusting model behavior.
+This enforces per-student data isolation: the chatbot only receives the authenticated student's own transcript, resolved from the JWT rather than from client input, so isolation does not depend on model behavior.
 
 ### 4. NLP-Driven Student Filtering
 
@@ -274,5 +274,4 @@ GET /health/db
 Returns DB connectivity status and startup initialization state.
 
 ✓ All four AI endpoints verified against live transcript data
-✓ SQL injection surface eliminated in `/students/ai-query` via closed-schema constraint
-⚠️ AI endpoints will return a graceful fallback message rather than a 500 error if the OpenRouter gateway is unreachable
+✓ SQL injection risk in `/students/ai-query` is reduced by the closed-schema constraint and server-side validation
