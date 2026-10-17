@@ -212,6 +212,6 @@ App: `http://localhost:5173`
 
 > Backend must be running at `http://localhost:8000` before starting the frontend, including a valid `OPENROUTER_API_KEY` for AI module responses.
 
-✓ All four AI surfaces tested against live backend endpoints
-✓ Chatbot identity scoping tested — no client-supplied student ID accepted
-⚠️ AI cards on `Transcript.jsx` degrade gracefully with an inline error state if the backend AI service is unreachable; the transcript table itself remains fully functional
+- ✓ All four AI surfaces tested against live backend endpoints
+- ✓ Chatbot identity scoping tested — no client-supplied student ID accepted
+- ⚠️ AI cards on `Transcript.jsx` degrade gracefully with an inline error state if the backend AI service is unreachable; the transcript table itself remains fully functional
