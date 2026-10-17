@@ -273,5 +273,5 @@ GET /health/db
 
 Returns DB connectivity status and startup initialization state.
 
-✓ All four AI endpoints verified against live transcript data
-✓ SQL injection risk in `/students/ai-query` is reduced by the closed-schema constraint and server-side validation
+- ✓ All four AI endpoints verified against live transcript data
+- ✓ SQL injection risk in `/students/ai-query` is reduced by the closed-schema constraint and server-side validation
