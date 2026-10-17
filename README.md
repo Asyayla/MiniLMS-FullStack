@@ -153,7 +153,7 @@ export OPENROUTER_API_KEY="<your-openrouter-key>"
 
 ## System Status
 
-✓ Core LMS — tested locally
-✓ AI Capability Layer (4 modules) — tested locally
-✓ Role-based access control — tested locally
-⚠️ SQL Server must be running and reachable before backend startup, or the API will fail health checks at `/health/db`.
+- ✓ Core LMS — tested locally
+- ✓ AI Capability Layer (4 modules) — tested locally
+- ✓ Role-based access control — tested locally
+- ⚠️ SQL Server must be running and reachable before backend startup, or the API will fail health checks at `/health/db`.
