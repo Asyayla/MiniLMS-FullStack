@@ -1,6 +1,6 @@
 # MiniLMS — Full Stack Learning Management System
 
-MiniLMS is an enterprise-grade Learning Management System built as a full stack monorepo. It delivers role-based access for Administrators, Teachers, and Students, backed by JWT authentication, complete lesson and grade lifecycle management, automated transcript generation, and a suite of four production AI modules powered by the OpenRouter LLM gateway.
+MiniLMS is a full stack Learning Management System built as a monorepo. It provides role-based access for Administrators, Teachers, and Students, with JWT authentication, lesson and grade management, automated transcript generation, and four AI modules powered by the OpenRouter LLM gateway.
 
 ---
 
@@ -33,7 +33,7 @@ Each service is independently documented:
 
 ### ✨ AI Capability Layer
 
-MiniLMS embeds four cutting-edge AI modules across the student and faculty experience, all routed through a FastAPI service layer integrated with the OpenRouter Llama 3 gateway. No AI module communicates with the database directly — every model interaction is grounded in data retrieved through the existing service and repository layers, enforcing strict separation between intelligence and persistence.
+MiniLMS embeds four AI modules across the student and faculty experience, all routed through a FastAPI service layer integrated with the OpenRouter Llama 3 gateway. No AI module communicates with the database directly — every model interaction is grounded in data retrieved through the existing service and repository layers, enforcing strict separation between intelligence and persistence.
 
 | Module | Surface | Description |
 |--------|---------|-------------|
@@ -42,7 +42,7 @@ MiniLMS embeds four cutting-edge AI modules across the student and faculty exper
 | ✨ AI Academic Mentor Chatbot | `Chatbot.jsx` (global) | A persistent, context-isolated assistant available to authenticated students, answering questions strictly from that student's own academic ledger. |
 | ✨ NLP-Driven Student Filtering | `StudentManagement.jsx` | A natural language query gateway for faculty, translating free-text instructor requests into safe, parameterized data filters. |
 
-Full module-level documentation, including prompt architecture and data-isolation guarantees, is provided in the [Backend README](backend/README.md) and [Frontend README](frontend/README.md).
+Full module-level documentation, including prompt architecture and data-isolation design, is provided in the [Backend README](backend/README.md) and [Frontend README](frontend/README.md).
 
 ---
 
@@ -55,7 +55,7 @@ Repository Layer      →  Database interaction and persistence (crud.py)
 Model / Schema Layer   →  DB entities (models.py) and API contracts (schemas.py)
 ```
 
-The AI service layer sits strictly above the repository layer. It never issues raw SQL or touches the ORM session directly — all academic data is supplied to AI functions as plain Python structures, pre-fetched by routers through `crud.py`. This guarantees that prompt construction, query parsing, and chatbot context injection cannot become a vector for SQL injection or unauthorized data access.
+The AI service layer sits strictly above the repository layer. It never issues raw SQL or touches the ORM session directly — all academic data is supplied to AI functions as plain Python structures, pre-fetched by routers through `crud.py`. This reduces the risk of prompt construction, query parsing, or chatbot context injection leading to SQL injection or unauthorized data access.
 
 ---
 
@@ -153,7 +153,7 @@ export OPENROUTER_API_KEY="<your-openrouter-key>"
 
 ## System Status
 
-✓ Core LMS — verified in production
-✓ AI Capability Layer (4 modules) — verified in production
-✓ Role-based access control — verified in production
+✓ Core LMS — tested locally
+✓ AI Capability Layer (4 modules) — tested locally
+✓ Role-based access control — tested locally
 ⚠️ SQL Server must be running and reachable before backend startup, or the API will fail health checks at `/health/db`.
